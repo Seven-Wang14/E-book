@@ -1,5 +1,5 @@
-# PDF E-book Reader
-PDF电子书阅读器
+# PDF E-book Reader(Chinese-English)
+PDF电子书阅读器（中-英）
 
 ## Introduction | 项目简介
 ### 中文
