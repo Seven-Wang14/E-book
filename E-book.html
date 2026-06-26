@@ -320,63 +320,63 @@
     foldBtn.addEventListener('click', () => {
       controlBar.classList.add('hide');
       unfoldBtn.classList.add('show');
-    });;;;
-    unfoldBtn........addEventListener('click', , , , , , , , () =>  =>  =>  =>  =>  =>  =>  => {
-      controlBar........classList........remove('hide');;;;;;;;
-      unfoldBtn........classList........remove('show');;;;;;;;
-    });;
+    });
+    unfoldBtn.addEventListener('click', () => {
+      controlBar.classList.remove('hide');
+      unfoldBtn.classList.remove('show');
+    });
 
-    leftBtn........addEventListener('click', , , , , , , , prevPage);;;;;;;;
-    rightBtn........addEventListener('click', , , , , , , , nextPage);;;;;;;;
-    prevBtn........addEventListener('click', , , , , , , , prevPage);;;;;;;;
-    nextBtn........addEventListener('click', , , , , , , , nextPage);;;;;;;;
-    goBtn........addEventListener('click', , , , , , , , jumpPage);;;;;;;;
-    jumpInput........addEventListener('keyup', , , , , , , , e =>  =>  =>  =>  =>  =>  =>  => { if (e........key ===  ===  ===  ===  ===  ===  ===  === 'Enter') jumpPage(); ; ; ; ; ; ; ; });;;;;;;;
+    leftBtn.addEventListener('click', prevPage);
+    rightBtn.addEventListener('click', nextPage);
+    prevBtn.addEventListener('click', prevPage);
+    nextBtn.addEventListener('click', nextPage);
+    goBtn.addEventListener('click', jumpPage);
+    jumpInput.addEventListener('keyup', e => { if (e.key === 'Enter') jumpPage(); });
 
-    document........addEventListener('keydown', , , , , , , , e =>  =>  =>  =>  =>  =>  =>  => {
-      if (isMobile() || ! || ! || ! || ! || ! || ! || ! || !pdfDoc) return;;;;;;;;
-      e..preventDefault();;
-      switch (e..key) {
-        case 'ArrowLeft'::
-        case 'PageUp'::
-          prevPage();;
-          break;;
-        case 'ArrowRight'::
-        case 'PageDown'::
-          nextPage();;
-          break;;
-        case 'Home'::
-          goFirst();;
-          break;;
-        case 'End'::
-          goLast();;
-          break;;
+    document.addEventListener('keydown', e => {
+      if (isMobile() || !pdfDoc) return;
+      e.preventDefault();
+      switch (e.key) {
+        case 'ArrowLeft':
+        case 'PageUp':
+          prevPage();
+          break;
+        case 'ArrowRight':
+        case 'PageDown':
+          nextPage();
+          break;
+        case 'Home':
+          goFirst();
+          break;
+        case 'End':
+          goLast();
+          break;
       }
-    });;
+    });
 
-    window........addEventListener('resize', , , , , , , , () =>  =>  =>  =>  =>  =>  =>  => {
-      if (pdfDoc) renderPage(pageNow);;
-    });;
+    window.addEventListener('resize', () => {
+      if (pdfDoc) renderPage(pageNow);
+    });
 
-    openSourceBtn........addEventListener('click', , , , , , , , () =>  =>  =>  =>  =>  =>  =>  => {
-      modalMask........style........display =  =  =  =  =  =  =  = 'flex';;;;;;;;
-    });;
+    openSourceBtn.addEventListener('click', () => {
+      modalMask.style.display = 'flex';
+    });
 
-    closeModal........addEventListener('click', , , , , , , , () =>  =>  =>  =>  =>  =>  =>  => {
-      modalMask........style........display =  =  =  =  =  =  =  = 'none';;;;;;;;
-    });;
+    closeModal.addEventListener('click', () => {
+      modalMask.style.display = 'none';
+    });
 
-    modalMask........addEventListener('click', , , , , , , , (e) =>  =>  =>  =>  =>  =>  =>  => {
-      if (e..target ===  === modalMask) {
-        modalMask........style........display =  =  =  =  =  =  =  = 'none';;;;;;;;
+    modalMask.addEventListener('click', (e) => {
+      if (e.target === modalMask) {
+        modalMask.style.display = 'none';
       }
-    });;
+    });
 
-    pdfjs........getDocument(PDF_FILE)........promise........then(doc =>  =>  =>  =>  =>  =>  =>  => {
-      pdfDoc =  = doc;;
-      totalPage........textContent =  =  =  =  =  =  =  = doc........numPages;;;;;;;;
-      renderPage(1);;
-    });;
+    pdfjs.getDocument(PDF_FILE).promise.then(doc => {
+      pdfDoc = doc;
+      totalPage.textContent = doc.numPages;
+      renderPage(1);
+    });
   </script>
 </body>
 </html>
