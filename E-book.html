@@ -5,332 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-book</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "SimSun", "Microsoft YaHei", serif;
-        }
-
-        body {
-            background-color: #f0f0f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            overflow: auto;
-        }
-
-        .book-container {
-            width: calc(210mm * 2);
-            height: 297mm;
-            background-color: #fff;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            display: flex;
-            flex-shrink: 0;
-        }
-
-        .pdf-page {
-            width: 50%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            background-color: white;
-            border-right: 1px solid #eee;
-        }
-        .pdf-page.right {
-            border-right: none;
-        }
-
-        .pdf-canvas {
-            width: auto;
-            height: auto;
-            max-width: 100%;
-            max-height: 100%;
-        }
-
-        .blank-page-tip {
-            font-size: 14px;
-            color: #ddd;
-            text-align: center;
-            user-select: none;
-        }
-
-        .page-bar {
-            position: absolute;
-            top: 10mm;
-            left: 0;
+        * {margin: 0;padding: 0;box-sizing: border-box;font-family: "SimSun", "Microsoft YaHei", serif;}
+        body {background: #f0f0f0;display: flex;justify-content: center;align-items: center;min-height: 100vh;padding: 20px;}
+        .a4-box {width: 210mm;height: 297mm;background: white;box-shadow: 0 0 10px #ccc;position: relative;overflow: hidden;}
+        #pdfCanvas {
             width: 100%;
-            text-align: center;
-            font-size: 18px;
-            color: #666;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 8px 0;
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
+            height: 100%;
+            transform: var(--transform-type);
+            transform-origin: center;
+            image-rendering: optimizeQuality;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        .page-input {
-            width: 50px;
-            height: 28px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background: transparent;
-            text-align: center;
-            font-size: 18px;
-            color: #666;
-            outline: none;
-            padding: 0 4px;
-        }
-        .page-input:focus {
-            border-color: #999;
-        }
-
-        .nav-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 45px;
-            height: 45px;
-            border: none;
-            background-color: rgba(248, 245, 240, 0.9);
-            color: #333;
-            font-size: 22px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            z-index: 10;
-        }
-        .nav-btn:disabled {
-            background-color: rgba(233, 233, 233, 0.9);
-            color: #b3b3b3;
-            cursor: not-allowed;
-        }
-        .nav-btn:not(:disabled):hover {
-            background-color: rgba(232, 224, 213, 0.9);
-        }
-        .prev-btn { left: -20px; }
-        .next-btn { right: -20px; }
-
-        @media (max-width: 1200px) {
-            .book-container { width: 210mm; }
-            .pdf-page.left { display: none; }
-            .pdf-page.right { width: 100%; border-right: none; }
-            body.show-last .pdf-page.left { display: flex; width: 100%; }
-            body.show-last .pdf-page.right { display: none; }
-            .prev-btn { left: 10mm; }
-            .next-btn { right: 10mm; }
-        }
+        .page-control {position: absolute;top: 10mm;left: 0;width: 100%;text-align: center;z-index: 10;background: rgba(255,255,255,0.9);padding: 5px 0;}
+        .page-input {width: 40px;height: 24px;border: 1px solid #ccc;border-radius: 3px;text-align: center;font-size: 16px;color: #666;outline: none;padding: 0 2px;}
+        .nav-btn {position: absolute;top: 50%;transform: translateY(-50%);width: 40px;height: 40px;border: none;background: #f8f5f0;color: #333;font-size: 20px;border-radius: 50%;cursor: pointer;z-index: 10;}
+        .nav-btn:disabled {background: #e9e9e9;color: #bbb;cursor: not-allowed;}
+        .prev-btn {left: 10mm;}
+        .next-btn {right: 10mm;}
         @media (max-width: 850px) {
-            .book-container {
-                width: 90vw;
-                height: calc(90vw * 1.414);
-            }
-            .nav-btn { width: 35px; height: 35px; font-size: 18px; }
-            .page-bar { font-size: 16px; }
-            .page-input { width: 45px; height: 24px; font-size: 16px; }
+            .a4-box {width: 90vw;height: calc(90vw * 1.414);}
+            .nav-btn {width: 30px;height: 30px;font-size: 16px;}
+            .page-input {width: 35px;height: 20px;font-size: 14px;}
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
-    <div class="book-container">
-        <div class="page-bar">
-            <input type="text" class="page-input" id="pageInput" value="1">
-            <span>/</span>
-            <span id="totalPageNum">0</span>
+    <div class="a4-box">
+        <div class="page-control">
+            <input type="text" class="page-input" id="pageNum" value="1">
+            <span id="totalPage">/ 0</span>
         </div>
         <button class="nav-btn prev-btn" id="prevBtn" disabled>←</button>
-        <button class="nav-btn next-btn" id="nextBtn">→</button>
-        
-        <div class="pdf-page left" id="leftPage">
-            <canvas class="pdf-canvas" id="leftCanvas"></canvas>
-            <div class="blank-page-tip" id="leftBlankTip" style="display: none;">空白页</div>
-        </div>
-        
-        <div class="pdf-page right" id="rightPage">
-            <canvas class="pdf-canvas" id="rightCanvas"></canvas>
-            <div class="blank-page-tip" id="rightBlankTip" style="display: none;">空白页</div>
-        </div>
+        <button class="nav-btn next-btn" id="nextBtn" disabled>→</button>
+        <canvas id="pdfCanvas"></canvas>
     </div>
 
     <script>
-        const PDF_FILE_PATH = "(your book's name.pdf";
-        let pdfDoc = null;
-        let currentPage = 1;
-        let totalPages = 0;
-        const DEVICE_PIXEL_RATIO = window.devicePixelRatio || 1;
-        const HD_SCALE_FACTOR = 2;
+       
+        const PDF_NAME = "Your book's name.pdf"; 
+        const FIX_DIRECTION = 0;    
+        let pdfDoc = null, curPage = 1, totalPage = 0;
+        const pdfjs = window['pdfjs-dist/build/pdf'];
+        pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-        const pdfjsLib = window['pdfjs-dist/build/pdf'];
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        window.onload = async () => {
+            
+            const transformMap = ['none', 'rotate(180deg)', 'scaleX(-1)', 'scaleY(-1)', 'scale(-1, -1)'];
+            document.documentElement.style.setProperty('--transform-type', transformMap[FIX_DIRECTION]);
 
-        async function init() {
             try {
-                const loadingTask = pdfjsLib.getDocument({
-                    url: PDF_FILE_PATH,
+               
+                pdfDoc = await pdfjs.getDocument({
+                    url: PDF_NAME,
                     cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
                     cMapPacked: true
-                });
-                pdfDoc = await loadingTask.promise;
-                totalPages = pdfDoc.numPages;
-                document.getElementById('totalPageNum').textContent = totalPages;
-                await renderPages();
-                bindPageInputEvent();
+                }).promise;
+                totalPage = pdfDoc.numPages;
+                document.getElementById('totalPage').textContent = '/' + totalPage;
+                await renderPage(curPage);
                 updateBtnStatus();
-            } catch (error) {
-                console.error(error);
-                showError("rightCanvas", "PDF加载失败！\n检查文件路径/用Edge打开");
-                showBlank("leftCanvas");
-            }
-        }
-
-        async function renderPages() {
-            hideAllBlank();
-            document.body.classList.remove('show-last');
-            let leftNum = 0, rightNum = 0;
-
-            if (currentPage === 1) {
-                showBlank("leftCanvas");
-                await renderPdf(1, "rightCanvas");
+            } catch (e) {
+                
+                const canvas = document.getElementById('pdfCanvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                ctx.font = "16px 微软雅黑";
+                ctx.fillStyle = "#ff0000";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("加载失败：" + e.message, canvas.width/2, canvas.height/2 - 20);
+                ctx.fillText("PDF与HTML放同一文件夹，文件名无空格", canvas.width/2, canvas.height/2 + 10);
                 return;
             }
 
-            if (currentPage === totalPages) {
-                document.body.classList.add('show-last');
-                await renderPdf(totalPages, "leftCanvas");
-                showBlank("rightCanvas");
-                return;
-            }
-
-            if (currentPage % 2 === 0) {
-                leftNum = currentPage;
-                rightNum = currentPage + 1;
-            } else {
-                leftNum = currentPage - 1;
-                rightNum = currentPage;
-            }
-
-            if (rightNum > totalPages) {
-                await renderPdf(leftNum, "leftCanvas");
-                showBlank("rightCanvas");
-            } else {
-                await renderPdf(leftNum, "leftCanvas");
-                await renderPdf(rightNum, "rightCanvas");
-            }
-        }
-
-        async function renderPdf(pageNum, canvasId) {
-            const page = await pdfDoc.getPage(pageNum);
-            const canvas = document.getElementById(canvasId);
-            const container = canvas.closest('.pdf-page');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const vw = page.getViewport({ scale: 1 });
-            const scale = Math.min(container.clientWidth/vw.width, container.clientHeight/vw.height) * DEVICE_PIXEL_RATIO * HD_SCALE_FACTOR;
-            const hdVw = page.getViewport({ scale: scale, antialias: true });
-
-            canvas.width = hdVw.width;
-            canvas.height = hdVw.height;
-            canvas.style.width = `${container.clientWidth}px`;
-            canvas.style.height = `${container.clientHeight}px`;
-
-            await page.render({ canvasContext: ctx, viewport: hdVw }).promise;
-        }
-
-        function showBlank(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const container = canvas.closest('.pdf-page');
-
-            canvas.width = container.clientWidth * DEVICE_PIXEL_RATIO;
-            canvas.height = container.clientHeight * DEVICE_PIXEL_RATIO;
-            canvas.style.width = `${container.clientWidth}px`;
-            canvas.style.height = `${container.clientHeight}px`;
-
-            ctx.fillStyle = "white";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            document.getElementById(canvasId.replace('Canvas','BlankTip')).style.display = "block";
-        }
-
-        function hideAllBlank() {
-            document.getElementById('leftBlankTip').style.display = "none";
-            document.getElementById('rightBlankTip').style.display = "none";
-        }
-
-        function showError(canvasId, msg) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const container = canvas.closest('.pdf-page');
-
-            canvas.width = container.clientWidth * DEVICE_PIXEL_RATIO;
-            canvas.height = container.clientHeight * DEVICE_PIXEL_RATIO;
-            canvas.style.width = `${container.clientWidth}px`;
-            canvas.style.height = `${container.clientHeight}px`;
-            ctx.scale(DEVICE_PIXEL_RATIO, DEVICE_PIXEL_RATIO);
-
-            ctx.font = "18px 微软雅黑";
-            ctx.fillStyle = "#ff4444";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(msg, container.clientWidth/2, container.clientHeight/2);
-        }
-
-        function bindPageInputEvent() {
-            document.getElementById('pageInput').addEventListener('keydown', async (e) => {
+           
+            document.getElementById('prevBtn').onclick = async () => {
+                if (curPage > 1) await renderPage(--curPage);
+                updateBtnStatus();
+            };
+            document.getElementById('nextBtn').onclick = async () => {
+                if (curPage < totalPage) await renderPage(++curPage);
+                updateBtnStatus();
+            };
+            
+            document.getElementById('pageNum').onkeydown = async (e) => {
                 if (e.key === 'Enter') {
-                    const num = parseInt(e.target.value.trim());
-                    if (!isNaN(num) && num >= 1 && num <= totalPages) {
-                        currentPage = num;
-                        await renderPages();
+                    const num = parseInt(e.target.value);
+                    if (num >= 1 && num <= totalPage) {
+                        curPage = num;
+                        await renderPage(curPage);
                         updateBtnStatus();
                     } else {
-                        e.target.value = currentPage;
-                        alert(`请输入1~${totalPages}的数字`);
+                        e.target.value = curPage;
                     }
-                    e.target.blur();
                 }
-            });
-        }
-
-        function updateBtnStatus() {
-            const prev = document.getElementById('prevBtn');
-            const next = document.getElementById('nextBtn');
-            prev.disabled = currentPage === 1;
-            next.disabled = currentPage === totalPages;
-            document.getElementById('pageInput').value = currentPage;
-        }
-
-        async function changePage(direction) {
-            const newPage = currentPage + direction;
-            if (newPage < 1 || newPage > totalPages) return;
-            currentPage = newPage;
-            await renderPages();
-            updateBtnStatus();
-        }
-
-        function bindEvents() {
-            document.getElementById('prevBtn').onclick = () => changePage(-1);
-            document.getElementById('nextBtn').onclick = () => changePage(1);
-            document.addEventListener('keydown', (e) => {
-                if (!pdfDoc) return;
-                if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') changePage(-1);
-                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changePage(2);
-            });
-        }
-
-        window.onload = () => {
-            init();
-            bindEvents();
+            };
         };
+
+       
+        async function renderPage(pageNum) {
+            const page = await pdfDoc.getPage(pageNum);
+            const canvas = document.getElementById('pdfCanvas');
+            const viewport = page.getViewport({scale: window.devicePixelRatio * 2});
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({canvasContext: canvas.getContext('2d'), viewport: viewport}).promise;
+            document.getElementById('pageNum').value = pageNum;
+        }
+
+        
+        function updateBtnStatus() {
+            document.getElementById('prevBtn').disabled = curPage === 1;
+            document.getElementById('nextBtn').disabled = curPage === totalPage;
+        }
     </script>
 </body>
 </html>
