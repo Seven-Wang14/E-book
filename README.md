@@ -84,3 +84,29 @@ Control elements will be compacted automatically on mobile screens.
 ---
 
 ## File Structure | 文件结构
+ebook-reader/
+├── index.html # 阅读器主页面
+└── book.pdf # 你的电子书文件
+
+---
+
+## Customization | 自定义修改
+### 中文
+1. 更换电子书：修改代码中 `PDF_FILE = 'book.pdf'` 为你的PDF文件地址。
+2. 美化界面：修改CSS中的颜色、圆角、阴影、毛玻璃透明度。
+3. 修改弹窗：编辑弹窗内的文字与GitHub链接。
+4. 调整控件大小，适配更多屏幕尺寸。
+
+### English
+1. Change PDF file: Modify `PDF_FILE = 'book.pdf'` to your own PDF path.
+2. Custom appearance: Adjust color, border radius, shadow and frosted transparency in CSS code.
+3. Edit popup content: Change text and GitHub link inside modal box.
+4. Resize buttons and text for more screen sizes.
+
+---
+
+## License
+MIT License
+
+You are free to use, modify and distribute this project for personal study and non-commercial purposes.
+保留开源声明，可自由学习、二次修改。
