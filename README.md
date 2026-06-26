@@ -110,3 +110,11 @@ MIT License
 
 You are free to use, modify and distribute this project for personal study and non-commercial purposes.
 保留开源声明，可自由学习、二次修改。
+
+This HTML file is developed for the E-book *Hanzhang*.
+此次html用于编写电子书《含章》
+
+Wangjunchi
+王俊驰
+2026.6.26
+
